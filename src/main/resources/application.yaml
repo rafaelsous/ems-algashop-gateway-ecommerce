@@ -65,6 +65,15 @@ eureka:
     register-with-eureka: false
     fetch-registry: true
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, gateway
+  endpoint:
+    gateway:
+      access: read_only
+
 logging:
   level:
     org.springframework.cloud.gateway: TRACE
