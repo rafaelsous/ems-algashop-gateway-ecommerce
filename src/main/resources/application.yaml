@@ -25,6 +25,17 @@ spring:
                 - Path=/api/v1/products/**,/api/v1/categories/**
                 - Method=GET,POST,PUT,DELETE,OPTIONS
 
+            - id: product-catalog-test-route
+              uri: http://localhost:8083
+              predicates:
+                - Path=/products/**
+              filters:
+                - RewritePath=/products(?<segment>/?.*), /api/v1/products$\{segment}
+#                - name: RewritePath
+#                  args:
+#                    regexp: /products(?<segment>/?.*)
+#                    replacement: /api/v1/products$\{segment}
+
 logging:
   level:
     org.springframework.cloud.gateway: TRACE
