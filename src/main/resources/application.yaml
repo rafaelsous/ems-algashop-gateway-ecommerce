@@ -18,7 +18,7 @@ spring:
             cors-configurations:
                 '[/**]':
                     allowed-origins:
-                      -  "http://localhost:4200"
+                      -  "http://admin.algashop.local:4200"
                     allowed-methods:
                     - GET
                     - POST
@@ -28,6 +28,7 @@ spring:
                     allowed-headers:
                       -  "*"
                     maxAge: 30
+            add-to-simple-url-handler-mapping: true
           routes:
             - id: billing-route
               uri: lb://billing
