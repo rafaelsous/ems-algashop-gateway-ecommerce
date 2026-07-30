@@ -1,0 +1,67 @@
+spring:
+  config:
+    import:
+      - aws-secretsmanager:/secret/algashop/gateway-ecommerce/redis-password?prefix=gateway-ecommerce.secrets.
+      - aws-parameterstore:/config/algashop/gateway-ecommerce?prefix=gateway-ecommerce.params
+      - aws-parameterstore:/config/algashop/shared?prefix=shared.params
+  application:
+    name: gateway-ecommerce
+  data:
+    redis:
+      host: ${gateway-ecommerce.params.redis.host}
+      port: ${gateway-ecommerce.params.redis.port}
+      password: ${gateway-ecommerce.secrets.redis-password}
+      database: ${gateway-ecommerce.params.redis.database}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${shared.params.auth-server-url}
+  cloud:
+    aws:
+      credentials:
+        access-key: test
+        secret-key: test
+      region:
+        static: us-east-1
+      endpoint: http://algashop-localstack:4566
+    gateway:
+      server:
+        webflux:
+          route-refresh-listener:
+            enabled: false
+#          filter:
+#            local-response-cache:
+#              enabled: true
+#              time-to-live: 5m
+#              size: 30MB
+          default-filters:
+            - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY, INTERNAL_SERVER_ERROR
+                methods: GET,PUT
+                exceptions: java.io.IOException, java.util.concurrent.TimeoutException
+                backoff:
+                  firstBackoff: 10ms
+                  maxBackoff: 20ms
+          httpclient:
+            connect-timeout: ${gateway-ecommerce.params.httpclient.connect-timeout}
+            response-timeout: ${gateway-ecommerce.params.httpclient.response-timeout}
+
+eureka:
+  client:
+    service-url:
+        defaultZone: ${shared.params.service-registry-url}/eureka
+    register-with-eureka: false
+    fetch-registry: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, gateway, circuitbreakers
+  endpoint:
+    gateway:
+      access: read_only
